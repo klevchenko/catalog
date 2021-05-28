@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\UserGroup;
 use App\Form\UserType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,6 +36,25 @@ class RegistrationController extends AbstractController
 
             // Set their role
             $user->setRoles(['ROLE_USER']);
+
+            $userGroup = $this->getDoctrine()->getRepository(UserGroup::class)->findOneBy(['default_group' => true]);
+
+            if(!$userGroup){
+                $userGroup = $this->getDoctrine()->getRepository(UserGroup::class)->findOneBy([]);
+            }
+
+            if(!$userGroup){
+                $userGroup = new UserGroup();
+                $userGroup->setName('Default');
+                $userGroup->setExtraCharge(10);
+
+                // Save
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($userGroup);
+                $em->flush();
+            }
+
+            $user->setUGroup($userGroup);
 
             // Save
             $em = $this->getDoctrine()->getManager();

@@ -48,8 +48,8 @@ class UserGroupController extends AbstractController
         } else {
             return $this->render('dashboard/user-group/add.html.twig', [
                 'form' => $form->createView(),
-                'form_title' => 'Add new user group',
-                'submit_btn_text' => 'Add new user group',
+                'form_title' => 'Нова група',
+                'submit_btn_text' => 'Додати',
             ]);
         }
     }
@@ -78,8 +78,8 @@ class UserGroupController extends AbstractController
         } else {
             return $this->render('dashboard/user-group/add.html.twig', [
                 'form' => $form->createView(),
-                'form_title' => 'Add new user group',
-                'submit_btn_text' => 'Add new user group',
+                'form_title' => 'Змінити групу ' . $user_g->getName(),
+                'submit_btn_text' => 'Змінити',
             ]);
         }
     }

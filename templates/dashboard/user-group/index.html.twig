@@ -3,17 +3,22 @@
 {% block body %}
     <div class="container">
         <div class="row">
+
+            <div class="col-12">
+                <nav class="navbar navbar-light bg-light mb-3">
+                    <a class="navbar-brand">Групи користувачів</a>
+                    <div class="form-inline">
+                        <a href="{{ path('app_add_user_group') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
+                        &nbsp;
+                        <button type="button" class="px-3 form-control btn btn-secondary"><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                </nav>
+            </div>
+
             <div class="col-md-12 col-lg-3">
                 {% include '@dashboard/sidebar.html.twig' %}
             </div>
             <div class="col-md-12 col-lg-9">
-
-                <nav class="navbar navbar-light bg-light mb-3">
-                    <a class="navbar-brand">User groups</a>
-                    <div class="form-inline">
-                        <a href="{{ path('app_add_user_group') }}" type="button" class="form-control btn btn-primary">New user group</a>
-                    </div>
-                </nav>
 
                 <div class="table-responsive">
                     <table class="table table-bordered">

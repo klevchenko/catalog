@@ -34,6 +34,11 @@ class UserGroup
      */
     private $users;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $default_group;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -101,5 +106,17 @@ class UserGroup
     public function __toString()
     {
         return strval($this->getId());
+    }
+
+    public function getDefaultGroup(): ?bool
+    {
+        return $this->default_group;
+    }
+
+    public function setDefaultGroup(?bool $default_group): self
+    {
+        $this->default_group = $default_group;
+
+        return $this;
     }
 }

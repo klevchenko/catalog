@@ -1,0 +1,57 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+
+            <div class="col-12">
+                <nav class="navbar navbar-light bg-light mb-3">
+                    <a class="navbar-brand form-inline">Каталоги</a>
+
+                    <div class="form-inline ">
+                        <a href="{{ path('app_new_catalog') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
+                        &nbsp
+                        <button type="button" class="px-3 form-control btn btn-secondary"><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+
+                </nav>
+            </div>
+
+            <div class="col-md-12 col-lg-3">
+                {% include '@dashboard/sidebar.html.twig' %}
+            </div>
+            <div class="col-md-12 col-lg-9">
+
+                {% if catalogs %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th scope="col">Каталог</th>
+                                <th scope="col">Створено</th>
+                                <th scope="col"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for catalog in catalogs %}
+                                <tr>
+                                    <td>{{ catalog.name }}</td>
+                                    <td>{{ catalog.date|date("m/d/Y") }}</td>
+                                    <td class="text-right">
+                                        <a onclick="return confirm('Ви впевнені що хочете видалити каталог {{ catalog.name }}?') ? true : false;" href="{{ path('app_delete_catalog', {'id': catalog.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-primary" role="alert">
+                        Каталогів поки що немає. <a href="{{ path('app_new_catalog') }}">Додати каталог.</a>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

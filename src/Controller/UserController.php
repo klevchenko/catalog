@@ -64,8 +64,8 @@ class UserController extends AbstractController
         } else {
             return $this->render('dashboard/user/add.html.twig', [
                 'form' => $form->createView(),
-                'form_title' => 'Add new user',
-                'submit_btn_text' => 'Add new user',
+                'form_title' => 'Новий користувач',
+                'submit_btn_text' => 'Додати',
             ]);
         }
     }
@@ -100,8 +100,8 @@ class UserController extends AbstractController
         } else {
             return $this->render('dashboard/user/add.html.twig', [
                 'form' => $form->createView(),
-                'form_title' => 'Edit user',
-                'submit_btn_text' => 'Edit user',
+                'form_title' => 'Редагування користувача ' . $user->getEmail(),
+                'submit_btn_text' => 'Змінити',
             ]);
         }
     }
