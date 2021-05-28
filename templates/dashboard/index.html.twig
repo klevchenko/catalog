@@ -1,0 +1,21 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-3">
+                {% include '@dashboard/sidebar.html.twig' %}
+            </div>
+            <div class="col-md-12 col-lg-9">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+                        <div class="card-header mb-3">dashboard</div>
+
+                        <p>{{ test }}</p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-3">
+                {% include '@dashboard/sidebar.html.twig' %}
+            </div>
+            <div class="col-md-12 col-lg-9">
+
+                <nav class="navbar navbar-light bg-light mb-3">
+                    <a class="navbar-brand">User groups</a>
+                    <div class="form-inline">
+                        <a href="{{ path('app_add_user_group') }}" type="button" class="form-control btn btn-primary">New user group</a>
+                    </div>
+                </nav>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th scope="col">Name</th>
+                            <th scope="col">Extra charge</th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for usergroup in usergroups %}
+                            <tr>
+                                <td>{{ usergroup.name }}</td>
+                                <td>{{ usergroup.extracharge }}</td>
+                                <td class="text-right">
+                                    <a href="{{ path('app_edit_user_group', {'id': usergroup.id}) }}" class="btn btn-light"><i class="fas fa-pen"></i></a>
+                                    <a onclick="return confirm('Are you sure?') ? true : false;" href="{{ path('app_delete_user_group', {'id': usergroup.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
