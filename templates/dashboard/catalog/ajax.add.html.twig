@@ -1,0 +1,98 @@
+{# templates/dashboard/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-3">
+                <a href="{{ path('app_catalogs') }}" type="button" class="btn btn-secondary d-block mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="col-md-12 col-lg-9">
+                <div class="card bg-light mb-3">
+                    <div class="card-body">
+
+                        <h4 class="p-3">{{ form_title }}</h4>
+
+                        <form class=" ajax_add_catalog">
+
+                            <input type="hidden" name="ajax_url" value="{{ ajax_url }}" />
+
+                            <input type="hidden" name="token" value="{{ csrf_token('ajax') }}"/>
+
+                            <div class="form_group">
+                                <div class="col-md-12 mb-3">
+                                    <label for="files">Завантажте файл у форматі CSV:</label>
+                                    <label class="card" for="files">
+                                        <span class="card-body p-2">
+                                            <input type="file" id="files" name="catalog" class="form-control-file"
+                                                   accept=".csv" required="required"/>
+                                        </span>
+                                    </label>
+                                    <small class="form-text text-muted">
+                                        Приклад структури файла
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <td>A0000000</td>
+                                                <td>xxxxxxx</td>
+                                                <td>100</td>
+                                            </tr>
+                                        </table>
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="my-3">
+                                <div id="parsed_csv_list" class="parsed_csv_list d-none m-3"
+                                     style="max-width: 100%;overflow: auto;max-height: 30vh;border: 1px solid #dee2e6;"></div>
+                                <div class="errors_wrap"></div>
+                            </div>
+
+                            <div class="form_group">
+                                <div class="col-md-12 mb-3">
+                                    <button type="submit" id="submit-file" class="btn btn-primary btn-block"
+                                        data-def-val="Перевірити файл"
+                                        data-loading="Перевірка файлу каталогу"
+                                        data-complete="Завантажити каталог"
+                                    >
+                                        Перевірити файл
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form_group progress-bar-wrap d-none">
+                                <div class="col-md-12 mb-3">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%;">0/0</div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12 mb-3">
+                                   <button type="button" class="btn btn-danger btn-block btn-stop-downloading">Зупинити завантаження</button>
+                                </div>
+                            </div>
+
+                            <div class="form_group d-none alert-downloading-stopped">
+                                 <div class="col-md-12">
+                                    <div class="alert alert-danger" role="alert">
+                                        Завантаження зупинено!
+                                    </div>
+                                </div>
+                            </div>    
+
+                            <div class="form_group d-none alert-downloading-success">
+                                 <div class="col-md-12">
+                                    <div class="alert alert-success" role="alert">
+                                        Завантаження завершено!
+                                    </div>
+                                </div>
+                            </div>                        
+
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

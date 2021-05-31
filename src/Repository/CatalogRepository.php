@@ -22,7 +22,7 @@ class CatalogRepository extends ServiceEntityRepository
     public function getAll()
     {
         return $this->createQueryBuilder('u')
-            ->orderBy('u.id', 'ASC')
+            ->orderBy('u.date', 'DESC')
             ->getQuery()
             ->getResult()
             ;

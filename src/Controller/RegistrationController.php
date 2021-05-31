@@ -35,7 +35,12 @@ class RegistrationController extends AbstractController
             $user->setPassword($this->passwordEncoder->encodePassword($user, $user->getPassword()));
 
             // Set their role
-            $user->setRoles(['ROLE_USER']);
+            // set ROLE_ADMIN to first registered user
+            if($this->getDoctrine()->getRepository(User::class)->findOneBy([])){
+                $user->setRoles(['ROLE_USER']);
+            } else {
+                $user->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
+            }
 
             $userGroup = $this->getDoctrine()->getRepository(UserGroup::class)->findOneBy(['default_group' => true]);
 

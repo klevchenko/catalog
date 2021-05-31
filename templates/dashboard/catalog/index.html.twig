@@ -21,6 +21,8 @@
                 {% include '@dashboard/sidebar.html.twig' %}
             </div>
             <div class="col-md-12 col-lg-9">
+            
+                {% include '@dashboard/flashes.html.twig' %}
 
                 {% if catalogs %}
                     <div class="table-responsive">
@@ -36,8 +38,10 @@
                             {% for catalog in catalogs %}
                                 <tr>
                                     <td>{{ catalog.name }}</td>
-                                    <td>{{ catalog.date|date("m/d/Y") }}</td>
+                                    <td>{{ catalog.date|date("m-d-Y g:ia") }}</td>
                                     <td class="text-right">
+                                        <a href="{{ path('app_view_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-file-download"></i></a>
+                                        <a href="{{ path('app_view_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
                                         <a onclick="return confirm('Ви впевнені що хочете видалити каталог {{ catalog.name }}?') ? true : false;" href="{{ path('app_delete_catalog', {'id': catalog.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
                                     </td>
                                 </tr>

@@ -9,33 +9,52 @@
                 </a>
             </div>
             <div class="col-md-12 col-lg-9">
-                <div class="card bg-light mb-3" >
+                <div class="card bg-light mb-3">
                     <div class="card-body">
 
                         <h4 class="p-3">{{ form_title }}</h4>
 
+                        <div class="form_group">
+                            <div class="col-md-12 mb-3">
+                                {% if form_errors(form) %}
+                                    <div class="alert alert-danger">
+                                        {{ form_errors(form) }}
+                                    </div>
+                                {% endif %}
+
+                                {% include '@dashboard/flashes.html.twig' %}
+                            </div>
+                        </div>
+
                         {{ form_start(form) }}
-                        <div class="form_group">
-                            <div class="col-md-12 mb-3">
-                                {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                        </div>
 
-                        <div class="form_group">
-                            <div class="col-md-12 mb-3">
-                                <label for="exampleFormControlFile1">Example file input</label>
-                                <input type="file" class="form-control-file" id="exampleFormControlFile1">
-                            </div>
-                        </div>
+                            <div class="form_group">
+                                <div class="col-md-12 mb-3">
+                                    {{ form_row(form.upload_file, {'attr': {'class': 'form-control p-1'}}) }}
 
-                        <div class="form-group">
-                            <div class="col-md-8 col-md-offset-4" style="margin-top:5px;">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ submit_btn_text }}
-                                </button>
+                                    <small class="form-text text-muted">
+                                        Приклад структури файла
+                                        <table class="table table-bordered">
+                                            <tr>
+                                                <td>A0000000</td>
+                                                <td>xxxxxxx</td>
+                                                <td>100</td>
+                                            </tr>
+                                        </table>
+                                    </small>
+                                    
+                                </div>
                             </div>
-                        </div>
+
+                            <div class="form_group">
+                                <div class="col-md-12 mb-3">
+                                    {{ form_row(form.send, {'attr': {'class': 'form-control btn-primary btn-block'}}) }}
+                                </div>
+                            </div>
+
+
                         {{ form_end(form) }}
+
                     </div>
                 </div>
             </div>

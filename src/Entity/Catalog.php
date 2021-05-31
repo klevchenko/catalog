@@ -30,7 +30,7 @@ class Catalog
     private $date;
 
     /**
-     * @ORM\OneToMany(targetEntity=CatalogItem::class, mappedBy="catalog")
+     * @ORM\OneToMany(targetEntity=CatalogItem::class, mappedBy="catalog", cascade="remove")
      */
     private $catalogItems;
 

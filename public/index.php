@@ -1,5 +1,8 @@
 <?php
 
+ini_set('upload_max_filesize','200M');
+ini_set('post_max_size','200M');
+
 use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
