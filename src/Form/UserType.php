@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\User;
+use Symfony\Component\Form\Extension\Core\Type\TextType as TextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -14,15 +15,24 @@ class UserType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('first_name')
-            ->add('last_name')
-            ->add('number')
-            ->add('email')
+            ->add('name', TextType::class,[
+                'label' => 'Логін',
+                'required' => false,
+            ])
+            ->add('number', TextType::class,[
+                'label' => 'Номер',
+                'required' => false,
+            ])
+            ->add('email', TextType::class,[
+                'label' => 'Емейл',
+                'required' => true,
+            ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
-                'first_options' => ['label' => 'Password'],
-                'second_options' => ['label' => 'Confirm Password']
+                'first_options' => ['label' => 'Пароль'],
+                'second_options' => ['label' => 'Підтвердіть пароль']
             ])
+
 
         ;
     }

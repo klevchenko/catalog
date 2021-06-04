@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -46,14 +48,19 @@ class User implements UserInterface
     private $u_group;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\OneToMany(targetEntity=Order::class, mappedBy="user")
      */
-    private $first_name;
+    private $orders;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $last_name;
+    private $name;
+
+    public function __construct()
+    {
+        $this->orders = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -160,26 +167,44 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getFirstName(): ?string
+    /**
+     * @return Collection|Order[]
+     */
+    public function getOrders(): Collection
     {
-        return $this->first_name;
+        return $this->orders;
     }
 
-    public function setFirstName(?string $first_name): self
+    public function addOrder(Order $order): self
     {
-        $this->first_name = $first_name;
+        if (!$this->orders->contains($order)) {
+            $this->orders[] = $order;
+            $order->setUser($this);
+        }
 
         return $this;
     }
 
-    public function getLastName(): ?string
+    public function removeOrder(Order $order): self
     {
-        return $this->last_name;
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getUser() === $this) {
+                $order->setUser(null);
+            }
+        }
+
+        return $this;
     }
 
-    public function setLastName(?string $last_name): self
+    public function getName(): ?string
     {
-        $this->last_name = $last_name;
+        return $this->name;
+    }
+
+    public function setName(?string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }

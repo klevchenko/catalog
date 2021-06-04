@@ -19,6 +19,34 @@ class CatalogItemRepository extends ServiceEntityRepository
         parent::__construct($registry, CatalogItem::class);
     }
 
+    public function findAllByNumbberOrCode($s)
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.number LIKE :v1')
+            ->orWhere('c.code LIKE :v2')
+            ->setParameter('v1', '%'.$s.'%')
+            ->setParameter('v2', '%'.$s.'%')
+            ->orderBy('c.id', 'ASC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
+    public function findAllByNumbberAndCode($s)
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.number LIKE :v1')
+            ->andHaving('c.code LIKE :v2')
+            ->setParameter('v1', '%'.$s.'%')
+            ->setParameter('v2', '%'.$s.'%')
+            ->orderBy('c.id', 'ASC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
     // /**
     //  * @return CatalogItem[] Returns an array of CatalogItem objects
     //  */

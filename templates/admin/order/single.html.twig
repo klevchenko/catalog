@@ -1,0 +1,61 @@
+{# templates/admin/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-3">
+                <a href="{{ path('app_orders') }}" type="button" class="btn btn-secondary d-block mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+
+                {% include '@admin/sidebar.html.twig' %}
+            </div>
+            <div class="col-md-12 col-lg-9">
+                <div class="card bg-light mb-3" >
+                    <div class="card-body">
+
+                        <h4 class="p-3">{{ form_title }}</h4>
+
+                        {{ dump(order) }}
+
+                        {% if order %}
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">№</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Оформленно</th>
+                                        <th scope="col">Статус</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td>{{ order.id }}</td>
+                                        <td>{{ order.user.email }}</td>
+                                        <td>{{ order.date|date("m-d-Y g:ia") }}</td>
+                                        <td>{{ order.status }}</td>
+
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    {{ dump(order.ordereditems) }}
+                                </div>
+                            </div>
+
+                        {% else %}
+                            <div class="alert alert-danger" role="alert">
+                                Здається це якась помилка. Перейдіть за <a href="{{ path('app_orders') }}">посиланням.</a>
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

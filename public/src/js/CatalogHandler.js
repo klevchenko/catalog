@@ -10,6 +10,7 @@ function CatalogHandler(){
 
     let progressBarWrap = $(".progress-bar-wrap");
     let progressBar = progressBarWrap.find(".progress-bar");
+    let progressCounter = progressBarWrap.find(".counter");
 
     let ajaxToken = form.find("input[name='token']").val();
 
@@ -182,16 +183,23 @@ function CatalogHandler(){
 
                 let qInterval           = undefined;
                 let queue               = [];
+                let queueItem           = [];
                 let queueCount          = 0;
                 let queueMaxCount       = formattedCSVData.length;
                 let queueRequest        = undefined;
                 let pendingRequests     = [];
                 let catalog_id          = response.data.catalog_id;
-                let maxStreamCount      = 10;
+                let maxStreamCount      = 5;
                 let streamCount         = 0;
+                let chunkSize           = 100;
+
+                let iterTimeArr         = [];
+                let iterTime            = 0;
+                let itersCount          = queueMaxCount / chunkSize;
+                let dt1                 = 0;
+                let dt2                 = 0;
 
                 let progressBarPersent  = '';
-                
 
                 stopDownloadingBtn.click(() => {
                     if(confirm("Bи впевнені що хочете зупинити завантаження каталога?")){
@@ -204,21 +212,29 @@ function CatalogHandler(){
 
                 qInterval = setInterval(() => {
 
-                    progressBarPersent = queueCount / queueMaxCount * 100;
+                    progressCounter.text((queueMaxCount - formattedCSVData.length) + '/' + queueMaxCount + ' - Залишилось приблизно ' + $this.sec_to_time(iterTime * itersCount) + '.');
+
+                    progressBarPersent = (queueMaxCount - formattedCSVData.length) / queueMaxCount * 100;
                     progressBar.text(parseInt(progressBarPersent) + '%');
 
                     progressBarPersent = progressBarPersent + '%';
                     progressBar.width(progressBarPersent);
             
                     if(queue.length > 0 && streamCount < maxStreamCount){
-                       
+
+                        dt1 = new Date();
+
                         streamCount++;
                         pendingRequests.push('1');
+
+                        queueItem = queue.splice(0, chunkSize);
+                        queueItem = queueItem[0];
+
                         queueRequest = $.ajax({
                             url: ajaxURL,
                             type: "post",
                             data: {
-                                json: JSON.stringify(queue.splice(0, 1)[0]),
+                                json: JSON.stringify(queueItem),
                                 token : ajaxToken,
                                 catalog_id : catalog_id,
                             }
@@ -229,6 +245,16 @@ function CatalogHandler(){
                             queueCount++;
                             streamCount--;
                             pendingRequests = pendingRequests.splice(0, 1);
+
+                            dt2 = new Date();
+                            iterTimeArr.push($this.diff_time(dt2, dt1));
+                            iterTimeArr.sort();
+                            if(iterTimeArr.length > 4){
+                                iterTime = iterTimeArr[Math.floor(iterTimeArr.length / 2)];
+                            } else {
+                                iterTime = iterTimeArr[0];
+                            }
+                            itersCount--;
                         });
                     }
                     
@@ -242,14 +268,14 @@ function CatalogHandler(){
 
                         clearInterval(qInterval);
 
-                        setTimeout(() => {window.location.reload()}, 1000);
+                        setTimeout(() => {window.location.reload()}, 2000);
                     }
 
                     if(queue.length === 0){
-                        queue.push(formattedCSVData.splice(0, 1)[0])
+                        queue.push(formattedCSVData.splice(0, chunkSize))
                     }
 
-                }, 50);
+                }, 100);
 
             
                 
@@ -267,6 +293,29 @@ function CatalogHandler(){
             
         });
         
+    }
+
+    this.diff_time = function (dt2, dt1)
+    {
+        let diff =(dt2.getTime() - dt1.getTime());
+        diff /= 1000;
+        return Math.abs(Math.round(diff));
+    }
+
+    this.sec_to_time = function (sec)
+    {
+        let totalSeconds = sec;
+        let hours = Math.floor(totalSeconds / 3600);
+        totalSeconds %= 3600;
+        let minutes = Math.floor(totalSeconds / 60);
+        let seconds = totalSeconds % 60;
+
+        // If you want strings with leading zeroes:
+        minutes = String(minutes).padStart(2, "0");
+        hours = String(hours).padStart(2, "0");
+        seconds = String(seconds).padStart(2, "0");
+
+        return hours + "год. " + minutes + "хв.";
     }
 }
 

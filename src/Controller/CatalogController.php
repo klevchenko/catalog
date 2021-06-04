@@ -5,15 +5,27 @@ namespace App\Controller;
 use App\Entity\Catalog;
 use App\Entity\CatalogItem;
 use App\Form\CreateNewCatalog;
-use App\Form\FileUploadType;
 use App\Repository\CatalogRepository;
 use App\Service\FileUploader;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Security\Core\Security;
 
 class CatalogController extends AbstractController
 {
+
+    /**
+     * @var Security
+     */
+    private $security;
+
+    public function __construct(Security $security)
+    {
+        $this->security = $security;
+    }
+
     /**
      * @Route("/catalogs", name="app_catalogs")
      */
@@ -21,7 +33,7 @@ class CatalogController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        return $this->render('dashboard/catalog/index.html.twig', [
+        return $this->render('admin/catalog/index.html.twig', [
             'catalogs' => $catalogRepository->getAll()
         ]);
     }
@@ -68,18 +80,22 @@ class CatalogController extends AbstractController
                             $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
                             $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
 
-                            $catalogItem = new CatalogItem();
-                            $catalogItem->setCatalog($catalog);
-                            $catalogItem->setCode($code);
-                            $catalogItem->setNumber($number);
-                            $catalogItem->setPrice($price);
+                            $price = floatval($price);
 
-                            // Save
-                            $em = $this->getDoctrine()->getManager();
-                            $em->persist($catalogItem);
+                            if( (!empty($price) || !empty($code)) && $price > 0 ){
+                                $catalogItem = new CatalogItem();
+                                $catalogItem->setCatalog($catalog);
+                                $catalogItem->setCode($code);
+                                $catalogItem->setNumber($number);
+                                $catalogItem->setPrice($price);
 
-                            if($catalog and $catalogItem){
-                                $catalog_created = true;
+                                // Save
+                                $em = $this->getDoctrine()->getManager();
+                                $em->persist($catalogItem);
+
+                                if($catalog_created === false and $catalog and $catalogItem){
+                                    $catalog_created = true;
+                                }
                             }
                         }
                         fclose($handle);
@@ -97,13 +113,13 @@ class CatalogController extends AbstractController
             }
         } elseif ($form->isSubmitted() && !$form->isValid()) {
             $this->addFlash('error','Помилка при додаванні каталога.');
-            return $this->render('dashboard/catalog/add.html.twig', [
+            return $this->render('admin/catalog/add.html.twig', [
                 'form' => $form->createView(),
                 'form_title' => 'Новий каталог',
                 'submit_btn_text' => 'Додати',
             ]);
         } else {
-            return $this->render('dashboard/catalog/add.html.twig', [
+            return $this->render('admin/catalog/add.html.twig', [
                 'form' => $form->createView(),
                 'form_title' => 'Новий каталог',
                 'submit_btn_text' => 'Додати',
@@ -118,13 +134,48 @@ class CatalogController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
+        //TODO: Уточнити як формується цінв
+        //TODO: Поправити формування ціни при перегляді
+
         $catalog = $this->getDoctrine()->getRepository(Catalog::class)->find($id);
         $catalog_items = $this->getDoctrine()->getRepository(CatalogItem::class)->findBy(['catalog' => $catalog->getId()]);
 
-        return $this->render('dashboard/catalog/single.html.twig', [
+        return $this->render('admin/catalog/single.html.twig', [
             'catalogname' => $catalog->getName(),
             'catalogitems' => $catalog_items,
         ]);
+    }
+
+    /**
+     * @Route("/catalog/download/{id}", name="app_download_catalog")
+     */
+    public function download(Request $request, $id)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->security->getUser();
+        $userGroup = $user->getUGroup();
+        $extraCharge = floatval($userGroup->getExtraCharge()) ?? 1;
+
+        $catalog = $this->getDoctrine()->getRepository(Catalog::class)->find($id);
+        $catalog_items = $this->getDoctrine()->getRepository(CatalogItem::class)->findBy(['catalog' => $catalog->getId()]);
+
+        $csvStr = '';
+
+        foreach ($catalog_items as $catalog_item){
+
+            //TODO: Уточнити як формується цінв
+            $price = $catalog_item->getPrice() * $extraCharge;
+
+            $csvStr .= '"'.$catalog_item->getNumber().'","'.$catalog_item->getCode().'","'.$price.'"' . "\n";
+
+        }
+
+        $response = new Response($csvStr);
+        $response->headers->set('Content-Type', 'text/csv');
+        $response->headers->set('Content-disposition','attachment; filename="'.$catalog->getName().'"');
+
+        return $response;
     }
 
     /**
@@ -140,6 +191,7 @@ class CatalogController extends AbstractController
         $entityManager->remove($user);
         $entityManager->flush();
 
+        $this->addFlash('success','Каталог видалено!');
         return $this->redirectToRoute('app_catalogs');
     }
 

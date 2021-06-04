@@ -1,4 +1,4 @@
-{# templates/dashboard/index.html.twig #}
+{# templates/admin/index.html.twig #}
 {% extends 'base.html.twig' %}
 {% block body %}
     <div class="container">
@@ -17,12 +17,7 @@
                         {{ form_start(form) }}
                         <div class="form_group">
                             <div class="col-md-12 mb-3">
-                                {{ form_row(form.first_name, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-                        </div>
-                        <div class="form_group">
-                            <div class="col-md-12 mb-3">
-                                {{ form_row(form.last_name, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_row(form.name, {'attr': {'class': 'form-control'}}) }}
                             </div>
                         </div>
                         <div class="form_group">
@@ -36,21 +31,17 @@
                             </div>
                         </div>
 
-                        <div class="form_group">
-                            <div class="col-md-12 mb-3">
-                                {{ form_row(form.u_group, {'attr': {'class': 'form-control'}}) }}
+                        {% if is_user_admin %}
+                            <div class="form_group">
+                                <div class="col-md-12 mb-3">
+                                    {{ form_row(form.u_group, {'attr': {'class': 'form-control'}}) }}
+                                </div>
                             </div>
-                        </div>
+                        {% endif %}
 
                         <div class="form_group">
                             <div class="col-md-12 mb-3">
-                                {{ form_row(form.password.first, {'attr': {'class':
-                                    'form-control'}}) }}
-                            </div>
-                        </div>
-                        <div class="form_group">
-                            <div class="col-md-12 mb-3">
-                                {{ form_row(form.password.second, {'attr': {'class':
+                                {{ form_row(form.password, {'attr': {'class':
                                     'form-control'}}) }}
                             </div>
                         </div>

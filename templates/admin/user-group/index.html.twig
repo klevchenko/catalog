@@ -1,0 +1,61 @@
+{# templates/admin/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+
+            <div class="col-12">
+                <nav class="navbar navbar-light bg-light mb-3">
+                    <a class="navbar-brand">Групи користувачів</a>
+                    <div class="form-inline">
+                        <a href="{{ path('app_add_user_group') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
+                        &nbsp;
+                        <a href="{{ path('app_set_default_user_group') }}" type="button" class="form-control btn btn-primary">Встановлення групи за замовчуванням</a>
+                        &nbsp;
+                        <button type="button" class="px-3 form-control btn btn-secondary"><i class="fas fa-ellipsis-v"></i></button>
+                    </div>
+                </nav>
+            </div>
+
+            <div class="col-md-12 col-lg-3">
+                {% include '@admin/sidebar.html.twig' %}
+            </div>
+
+            <div class="col-md-12 col-lg-9">
+
+                {% include '@admin/flashes.html.twig' %}
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th scope="col">Назва групи</th>
+                            <th scope="col">Множник ціни</th>
+                            <th scope="col">Група за замовчуванням</th>
+                            {% if usergroups|length > 1 %}
+                            <th scope="col" class="text-right">Дії з групою</th>
+                            {% endif %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for usergroup in usergroups %}
+                            <tr>
+                                <td>{{ usergroup.name }}</td>
+                                <td>{{ usergroup.extracharge }}</td>
+                                <td>{% if usergroup.defaultgroup  %}Так{% endif %}</td>
+                                {% if usergroups|length > 1 %}
+                                    <td class="text-right">
+                                        <a href="{{ path('app_edit_user_group', {'id': usergroup.id}) }}" class="btn btn-light"><i class="fas fa-pen"></i></a>
+                                        <a onclick="return confirm('Ви впевнені що хочете видалити групу {{ usergroup.name }}?') ? true : false;" href="{{ path('app_delete_user_group', {'id': usergroup.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                    </tr>
+                                {% endif %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 col-lg-3">
+                <a href="{{ path('app_user_groups') }}" type="button" class="btn btn-secondary d-block mb-3">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+            <div class="col-md-12 col-lg-9">
+                <div class="card bg-light mb-3" >
+                    <div class="card-body">
+
+                        <h4 class="p-3">{{ form_title }}</h4>
+
+                        {{ form_start(form) }}
+
+                        <div class="form-group form-check">
+                            {{ form_row(form.default_group, {'attr': {'class': 'form-control'}}) }}
+                        </div>
+
+
+                        <div class="form-group">
+                            <div class="col-md-8 col-md-offset-4" style="margin-top:5px;">
+                                <button type="submit" class="btn btn-primary">{{ submit_btn_text }}</button>
+                            </div>
+                        </div>
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

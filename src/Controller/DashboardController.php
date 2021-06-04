@@ -15,7 +15,7 @@ class DashboardController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_USER');
 
 
-        return $this->render('dashboard/index.html.twig', [
+        return $this->render('admin/index.html.twig', [
             'test' => time(),
         ]);
     }

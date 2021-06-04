@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Catalog;
 use App\Entity\CatalogItem;
 use App\Form\CreateNewCatalog;
+use App\Repository\CatalogItemRepository;
 use App\Repository\CatalogRepository;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,28 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AjaxCatalogController extends AbstractController
 {
+
+    /**
+     * @Route("/catalogs/ajax-search", name="app_ajax_catalog_item_search")
+     */
+    public function ajaxSearch(Request $request, CatalogItemRepository $catalogItemRepository)
+    {
+        $submittedToken = $request->request->get('token');
+        $s = $request->query->get('s');
+
+        dd($catalogItemRepository->findAllByNumbberOrCode($s));
+
+        if(!$this->isCsrfTokenValid('ajax', $submittedToken)){
+            return new JsonResponse([
+                'status' => false,
+                'msg'    => 'Помилка. Токен невалідний.',
+                'data'   => [],
+            ]);
+        }
+
+
+
+    }
 
     /**
      * @Route("/catalogs/ajax-add", name="app_new_ajax_catalog")
@@ -76,7 +99,7 @@ class AjaxCatalogController extends AbstractController
             return $this->newCatalogItem($request);
         } else 
         {
-            return $this->render('dashboard/catalog/ajax.add.html.twig', [
+            return $this->render('admin/catalog/ajax.add.html.twig', [
                 'form_title' => 'Новий каталог',
                 'ajax_url' => $ajaxURL,
             ]);
@@ -93,23 +116,32 @@ class AjaxCatalogController extends AbstractController
 
         if($catalog && $json && json_decode($json)){
 
-            $data = json_decode($json);
+            $dataArr = json_decode($json);
 
-            $number = (isset($data[0]) and !empty($data[0])) ? $data[0] : '';
-            $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
-            $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
+            if(is_array($dataArr) and count($dataArr) > 0){
+                foreach ($dataArr as $data){
+                    $number = (isset($data[0]) and !empty($data[0])) ? $data[0] : '';
+                    $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
+                    $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
 
-            $catalogItem = new CatalogItem();
-            $catalogItem->setCatalog($catalog);
-            $catalogItem->setCode($code);
-            $catalogItem->setNumber($number);
-            $catalogItem->setPrice($price);
+                    $number = str_replace('"', '', $number);
+                    $code   = str_replace('"', '', $code);
+                    $price  = str_replace('"', '', $price);
+                    $price  = floatval($price);
 
-        
-            // Save
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($catalogItem);
-            $em->flush();
+                    $catalogItem = new CatalogItem();
+                    $catalogItem->setCatalog($catalog);
+                    $catalogItem->setCode($code);
+                    $catalogItem->setNumber($number);
+                    $catalogItem->setPrice($price);
+
+
+                    // Save
+                    $em = $this->getDoctrine()->getManager();
+                    $em->persist($catalogItem);
+                    $em->flush();
+                }
+            }
 
             return new JsonResponse([
                 'status' => true,
