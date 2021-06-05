@@ -1,0 +1,41 @@
+form.submited {
+    position: relative;
+}
+
+form.submited .form_group {
+    filter: blur(3px);
+}
+
+form:not(.submited) .spinner{
+    display: none;
+}
+
+form.submited .spinner {
+    display: block;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 99999;
+}
+
+form.submited .form_group *{
+    cursor: wait;
+}
+
+form label + ul{
+    list-style: none;
+    padding: 0;
+}
+
+form label + ul > li{
+    margin-top: 1rem;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    position: relative;
+    padding: .75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: .25rem;
+}

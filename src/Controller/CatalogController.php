@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Catalog;
 use App\Entity\CatalogItem;
 use App\Form\CreateNewCatalog;
+use App\Repository\CatalogItemRepository;
 use App\Repository\CatalogRepository;
 use App\Service\FileUploader;
 use Symfony\Component\HttpFoundation\Response;
@@ -41,7 +42,7 @@ class CatalogController extends AbstractController
     /**
      * @Route("/catalogs/new", name="app_new_catalog")
      */
-    public function new(Request $request, FileUploader $file_uploader)
+    public function new(Request $request, FileUploader $file_uploader, CatalogItemRepository $catalogItemRepository)
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
@@ -72,35 +73,97 @@ class CatalogController extends AbstractController
 
                     $directory = $file_uploader->getTargetDirectory();
                     $full_path = $directory.'/'.$file_name;
+                    $full_import_file_path = $directory.'/'.'tmp.csv';
 
+                    // create tnp file
+                    file_put_contents($full_import_file_path, '');
+
+                    // prepare tmp file to LOAD DATA LOCAL INFILE
                     if (($handle = fopen($full_path, "r")) !== FALSE) {
                         while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
 
                             $number = (isset($data[0]) and !empty($data[0])) ? $data[0] : '';
-                            $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
-                            $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
+                            $code = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
+                            $price = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
 
                             $price = floatval($price);
 
-                            if( (!empty($price) || !empty($code)) && $price > 0 ){
-                                $catalogItem = new CatalogItem();
-                                $catalogItem->setCatalog($catalog);
-                                $catalogItem->setCode($code);
-                                $catalogItem->setNumber($number);
-                                $catalogItem->setPrice($price);
-
-                                // Save
-                                $em = $this->getDoctrine()->getManager();
-                                $em->persist($catalogItem);
-
-                                if($catalog_created === false and $catalog and $catalogItem){
-                                    $catalog_created = true;
-                                }
+                            if (!empty($number) || !empty($code)) {
+                                file_put_contents($full_import_file_path, $catalog->getId() . ',' . $number . ',' . $code . ',' . $price . "\n", FILE_APPEND);
                             }
                         }
                         fclose($handle);
-                        $em->flush();
+
                     }
+
+                    // LOAD DATA LOCAL INFILE
+                    try
+                    {
+
+                        $pdo = new \PDO(
+                            "mysql:host=127.0.0.1;dbname=catalogs",
+                            'root',
+                            'iy^&T87IGFI&^TgkhueI^TGIyk',
+                            array
+                            (
+                                \PDO::MYSQL_ATTR_LOCAL_INFILE => true,
+                                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION
+                            )
+                        );
+                    }
+                    catch (\PDOException $e)
+                    {
+                        $this->addFlash('error','Помилка при додаванні каталога.' . $e->getMessage());
+                        return $this->redirectToRoute('app_catalogs');
+                    }
+
+                    $affectedRows = $pdo->exec
+                    (
+                        "LOAD DATA LOCAL INFILE '$full_import_file_path'
+INTO TABLE catalog_item  
+FIELDS TERMINATED BY ','
+LINES TERMINATED BY '\n'
+(catalog_id, number, code, price);"
+
+                    );
+
+                    if($affectedRows){
+                        $catalog_created = true;
+                    }
+
+
+
+//                    if (($handle = fopen($full_path, "r")) !== FALSE) {
+//                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+//
+//                            $number = (isset($data[0]) and !empty($data[0])) ? $data[0] : '';
+//                            $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
+//                            $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
+//
+//                            $price = floatval($price);
+//
+//                            if( (!empty($price) || !empty($code)) && $price > 0 ){
+//                                $catalogItem = new CatalogItem();
+//                                $catalogItem->setCatalog($catalog);
+//                                $catalogItem->setCode($code);
+//                                $catalogItem->setNumber($number);
+//                                $catalogItem->setPrice($price);
+//
+//                                // Save
+//                                $em = $this->getDoctrine()->getManager();
+//                                $em->persist($catalogItem);
+//                                $em->flush();
+//
+//                                if($catalog_created === false and $catalog and $catalogItem){
+//                                    $catalog_created = true;
+//                                }
+//                            }
+//                        }
+//                        fclose($handle);
+//
+//                    }
+
+
                 }
             }
 
@@ -165,7 +228,8 @@ class CatalogController extends AbstractController
         foreach ($catalog_items as $catalog_item){
 
             //TODO: Уточнити як формується цінв
-            $price = $catalog_item->getPrice() * $extraCharge;
+            $price = floatval($catalog_item->getPrice());
+            $price = $price * $extraCharge;
 
             $csvStr .= '"'.$catalog_item->getNumber().'","'.$catalog_item->getCode().'","'.$price.'"' . "\n";
 

@@ -41,7 +41,9 @@ class CreateNewCatalog extends AbstractType
                     ])
                 ],
             ])
-            ->add('send', SubmitType::class);
+            ->add('send', SubmitType::class, [
+                'label' => 'Завантажити каталог',
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)

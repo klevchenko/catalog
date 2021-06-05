@@ -11,10 +11,14 @@
                         <div class="card-body">
                             <div class="form_group">
                                 <p>
-                                    If an account matching your email exists, then an email was just sent that contains a link that you can use to reset your password.
-                                    This link will expire in {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
+                                    Якщо обліковий запис, що відповідає вашій електронній пошті, існує,
+                                    то щойно надіслано електронне повідомлення, яке містить посилання,
+                                    за допомогою якого можна скинути пароль.
+                                    Термін дії цього посилання закінчиться через 1 годину.
                                 </p>
-                                <p>If you don't receive an email please check your spam folder or <a href="{{ path('app_forgot_password_request') }}">try again</a>.</p>
+                                <p>
+                                    Якщо ви не отримали електронне повідомлення, перевірте папку зі спамом або <a href="{{ path('app_forgot_password_request') }}">повторіть спробу</a>.
+                                </p>
                             </div>
                         </div>
                     </div>
