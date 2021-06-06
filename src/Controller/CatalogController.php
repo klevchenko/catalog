@@ -34,8 +34,11 @@ class CatalogController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
+        $user = $this->security->getUser();
+
         return $this->render('admin/catalog/index.html.twig', [
-            'catalogs' => $catalogRepository->getAll()
+            'catalogs' => $catalogRepository->getAll(),
+            'is_user_admin' => in_array('ROLE_ADMIN', $user->getRoles()),
         ]);
     }
 
@@ -44,7 +47,7 @@ class CatalogController extends AbstractController
      */
     public function new(Request $request, FileUploader $file_uploader, CatalogItemRepository $catalogItemRepository)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $catalog = new Catalog();
         $catalog_created = false;
@@ -54,7 +57,6 @@ class CatalogController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid())
         {
-
 
             $file = $form['upload_file']->getData();
             if ($file)
@@ -93,17 +95,20 @@ class CatalogController extends AbstractController
                             }
                         }
                         fclose($handle);
-
                     }
 
                     // LOAD DATA LOCAL INFILE
                     try
                     {
+                        $dbname = $this->getDoctrine()->getConnection()->getDatabase();
+                        $dbhost = $this->getDoctrine()->getConnection()->getHost();
+                        $dbuser = $this->getDoctrine()->getConnection()->getUsername();
+                        $dbpass = $this->getDoctrine()->getConnection()->getPassword();
 
                         $pdo = new \PDO(
-                            "mysql:host=127.0.0.1;dbname=catalogs",
-                            'root',
-                            'iy^&T87IGFI&^TgkhueI^TGIyk',
+                            "mysql:host=$dbhost;dbname=$dbname",
+                            $dbuser,
+                            $dbpass,
                             array
                             (
                                 \PDO::MYSQL_ATTR_LOCAL_INFILE => true,
@@ -120,7 +125,7 @@ class CatalogController extends AbstractController
                     $affectedRows = $pdo->exec
                     (
                         "LOAD DATA LOCAL INFILE '$full_import_file_path'
-INTO TABLE catalog_item  
+INTO TABLE catalog_item
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (catalog_id, number, code, price);"
@@ -129,41 +134,20 @@ LINES TERMINATED BY '\n'
 
                     if($affectedRows){
                         $catalog_created = true;
+
+                        try {
+                            if (file_exists($full_import_file_path)) {
+                                unlink($full_import_file_path);
+                            }
+
+                            if (file_exists($full_path)) {
+                                unlink($full_path);
+                            }
+                        } catch (\Error $e){
+                            $this->addFlash('error','Помилка при додаванні каталога.' . $e);
+                            return $this->redirectToRoute('app_catalogs');
+                        }
                     }
-
-
-
-//                    if (($handle = fopen($full_path, "r")) !== FALSE) {
-//                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-//
-//                            $number = (isset($data[0]) and !empty($data[0])) ? $data[0] : '';
-//                            $code   = (isset($data[1]) and !empty($data[1])) ? $data[1] : '';
-//                            $price  = (isset($data[2]) and !empty($data[2])) ? $data[2] : '';
-//
-//                            $price = floatval($price);
-//
-//                            if( (!empty($price) || !empty($code)) && $price > 0 ){
-//                                $catalogItem = new CatalogItem();
-//                                $catalogItem->setCatalog($catalog);
-//                                $catalogItem->setCode($code);
-//                                $catalogItem->setNumber($number);
-//                                $catalogItem->setPrice($price);
-//
-//                                // Save
-//                                $em = $this->getDoctrine()->getManager();
-//                                $em->persist($catalogItem);
-//                                $em->flush();
-//
-//                                if($catalog_created === false and $catalog and $catalogItem){
-//                                    $catalog_created = true;
-//                                }
-//                            }
-//                        }
-//                        fclose($handle);
-//
-//                    }
-
-
                 }
             }
 
@@ -190,6 +174,7 @@ LINES TERMINATED BY '\n'
         }
     }
 
+    //TODO: Уточнити чи це взагалі треба
     /**
      * @Route("/catalog/view/{id}", name="app_view_catalog")
      */
@@ -223,11 +208,19 @@ LINES TERMINATED BY '\n'
         $catalog = $this->getDoctrine()->getRepository(Catalog::class)->find($id);
         $catalog_items = $this->getDoctrine()->getRepository(CatalogItem::class)->findBy(['catalog' => $catalog->getId()]);
 
+        // update downloads count
+        $catalog->setDownloads($catalog->getDownloads() + 1);
+
+        // Save
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($catalog);
+        $em->flush();
+
         $csvStr = '';
 
         foreach ($catalog_items as $catalog_item){
 
-            //TODO: Уточнити як формується цінв
+            //TODO: Уточнити як формується ціна
             $price = floatval($catalog_item->getPrice());
             $price = $price * $extraCharge;
 
@@ -247,7 +240,7 @@ LINES TERMINATED BY '\n'
      */
     public function delete(Request $request, $id)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $entityManager = $this->getDoctrine()->getManager();
         $user = $this->getDoctrine()->getRepository(Catalog::class)->find($id);

@@ -2,21 +2,36 @@
 
 namespace App\Controller;
 
+use App\Entity\Chat;
+use App\Entity\Order;
 use App\Entity\User;
 use App\Entity\UserGroup;
 use App\Form\UserType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
+
+
+
 
 class RegistrationController extends AbstractController
 {
     private $passwordEncoder;
+    private $mailer;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder, MailerInterface $mailer)
     {
         $this->passwordEncoder = $passwordEncoder;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -66,6 +81,21 @@ class RegistrationController extends AbstractController
             $em->persist($user);
             $em->flush();
 
+            try {
+                $chat = new Chat();
+                $chat->setUser($user);
+                $chat->setRelOrder(null);
+
+                // Save
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($chat);
+                $em->flush();
+
+                $this->registrationEmail($user->getEmail());
+            } catch (\Exception $e) {
+
+            }
+
             return $this->redirectToRoute('app_login');
         }
 
@@ -73,4 +103,40 @@ class RegistrationController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    /**
+     * @Route("/registration-test", name="registration_etst")
+     */
+    public function registrationEmail($userEmail = 'test@test.com') : Response
+    {
+
+      $homeURL   = $this->generateUrl('app_home', [], UrlGeneratorInterface::ABSOLUTE_URL);
+      $domain    = parse_url($homeURL)["host"];
+      $loginURL  = $this->generateUrl('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
+      $loginURL  = $loginURL . '?email='.$userEmail;
+
+      //TODO: змінити домен
+
+      $email = (new TemplatedEmail())
+                 ->from('mailer@your-domain.com')
+                 ->to(new Address($userEmail))
+                 ->subject('Реєстрація на сайті ' . $domain)
+                 ->htmlTemplate('registration/email.html.twig')
+                 ->context([
+                     'homeURL' => $homeURL,
+                     'loginURL' => $loginURL,
+                     'user_email' => $userEmail,
+                     'domain' => $domain,
+                 ])
+                 ;
+
+      $this->mailer->send($email);
+
+      return new Response(
+        '',
+         Response::HTTP_OK
+       );
+
+    }
+
 }

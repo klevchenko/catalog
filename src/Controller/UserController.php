@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Chat;
+use App\Entity\Message;
+use App\Entity\Order;
 use App\Entity\User;
 use App\Entity\UserGroup;
 use App\Form\CreateNewUser;
@@ -10,6 +13,7 @@ use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Security;
 
@@ -32,7 +36,7 @@ class UserController extends AbstractController
      */
     public function index(UserRepository $userRepository)
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $user = $this->security->getUser();
 
@@ -162,8 +166,19 @@ class UserController extends AbstractController
 
             $this->sendEditEmail($user);
 
-            $this->addFlash('success', 'Користувача змінено.');
-            return $this->redirectToRoute('app_users');
+            if($curUser->getId() === $user->getId()){
+                $this->addFlash('success', 'Дані оновлено.');
+                return $this->redirectToRoute('app_user_profile');
+            }
+            elseif (in_array('ROLE_ADMIN', $curUser->getRoles())){
+                $this->addFlash('success', 'Користувача змінено.');
+                return $this->redirectToRoute('app_users');
+            }
+            else {
+                $this->addFlash('success', 'Дані змінено.');
+                return $this->redirectToRoute('app_user_profile');
+            }
+
         } else {
             return $this->render('admin/user/add.html.twig', [
                 'form' => $form->createView(),
@@ -175,11 +190,61 @@ class UserController extends AbstractController
     }
 
     /**
+     * @Route("/user/view/{id}", name="app_view_user_profile")
+     */
+    public function viewProfile($id)
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $user = $this->getDoctrine()->getRepository(User::class)->find($id);
+        $orders = $this->getDoctrine()->getRepository(Order::class)->findBy(array('user' => $user->getId()), array('date' => 'DESC'), 10);
+        $def_chat = $this->getDoctrine()->getRepository(Chat::class)->findOneBy(array('user' => $user->getId(), 'rel_order' => null));
+        $def_chatID = $def_chat && $def_chat->getId() ? $def_chat->getId() : false;
+
+        $ajaxGetChat = $this->generateUrl('app_get_chat', ['id' => $def_chatID], UrlGeneratorInterface::ABSOLUTE_URL);
+        $ajaxChatNewMsg = $this->generateUrl('app_chat_new_msg', ['id' => $def_chatID], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->render('admin/user/single.html.twig', [
+            'user' => $user,
+            'orders' => $orders,
+            'is_user_admin' => in_array('ROLE_ADMIN', $user->getRoles()),
+            'def_chat_id' => $def_chatID,
+            'ajax_get_chat_url' => $ajaxGetChat,
+            'app_chat_new_msg' => $ajaxChatNewMsg,
+        ]);
+    }
+
+    /**
+     * @Route("/user/profile", name="app_user_profile")
+     */
+    public function profile()
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $curUser = $this->security->getUser();
+        $orders = $this->getDoctrine()->getRepository(Order::class)->findBy(array('user' => $curUser->getId()), array('date' => 'DESC'), 5);
+        $def_chat = $this->getDoctrine()->getRepository(Chat::class)->findOneBy(array('user' => $curUser->getId(), 'rel_order' => null));
+        $def_chatID = $def_chat && $def_chat->getId() ? $def_chat->getId() : false;
+
+        $ajaxGetChat = $this->generateUrl('app_get_chat', ['id' => $def_chatID], UrlGeneratorInterface::ABSOLUTE_URL);
+        $ajaxChatNewMsg = $this->generateUrl('app_chat_new_msg', ['id' => $def_chatID], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        return $this->render('admin/user/single.html.twig', [
+            'user' => $curUser,
+            'orders' => $orders,
+            'is_user_admin' => in_array('ROLE_ADMIN', $curUser->getRoles()),
+            'def_chat_id' => $def_chatID,
+            'ajax_get_chat_url' => $ajaxGetChat,
+            'app_chat_new_msg' => $ajaxChatNewMsg,
+        ]);
+    }
+
+    /**
      * @Route("/users/delete/{id}", name="app_delete_user")
      */
     public function delete($id)
     {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_USER');
 
         //TODO: Додати перевірки на зв'язані каталоги або замовлення
 
@@ -195,7 +260,7 @@ class UserController extends AbstractController
 
     private function isCanEdit(User $curUser, User $user){
 
-        if(in_array('ROLE_ADMIN', $user->getRoles())){
+        if(in_array('ROLE_ADMIN', $curUser->getRoles())){
             return true;
         } elseif ($user->getId() === $curUser->getId()){
             return true;

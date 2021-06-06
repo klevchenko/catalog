@@ -8,11 +8,15 @@
                 <nav class="navbar navbar-light bg-light mb-3">
                     <a class="navbar-brand form-inline">Каталоги</a>
 
-                    <div class="form-inline ">
-                        <a href="{{ path('app_new_catalog') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
-                        &nbsp
-                        <button type="button" class="px-3 form-control btn btn-secondary"><i class="fas fa-ellipsis-v"></i></button>
-                    </div>
+                    {% if is_granted('ROLE_ADMIN')  %}
+
+                    {% endif %}
+
+                    {% if is_granted('ROLE_ADMIN')  %}
+                      <div class="form-inline ">
+                          <a href="{{ path('app_new_catalog') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
+                      </div>
+                    {% endif %}
 
                 </nav>
             </div>
@@ -21,7 +25,7 @@
                 {% include '@admin/sidebar.html.twig' %}
             </div>
             <div class="col-md-12 col-lg-9">
-            
+
                 {% include '@admin/flashes.html.twig' %}
 
                 {% if catalogs %}
@@ -30,7 +34,10 @@
                             <thead>
                             <tr>
                                 <th scope="col">Каталог</th>
-                                <th scope="col">Створено</th>
+                                {% if is_granted('ROLE_ADMIN')  %}
+                                    <th scope="col">Завантажень</th>
+                                {% endif %}
+                                <th scope="col">Завантажено</th>
                                 <th scope="col"></th>
                             </tr>
                             </thead>
@@ -38,11 +45,17 @@
                             {% for catalog in catalogs %}
                                 <tr>
                                     <td>{{ catalog.name }}</td>
+                                    {% if is_granted('ROLE_ADMIN')  %}
+                                        <td>{{ catalog.downloads }}</td>
+                                    {% endif %}
                                     <td>{{ catalog.date|date("m-d-Y g:ia") }}</td>
                                     <td class="text-right">
                                         <a href="{{ path('app_download_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-file-download"></i></a>
                                         <a href="{{ path('app_view_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
-                                        <a onclick="return confirm('Ви впевнені що хочете видалити каталог {{ catalog.name }}?') ? true : false;" href="{{ path('app_delete_catalog', {'id': catalog.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+
+                                        {% if is_granted('ROLE_ADMIN')  %}
+                                            <a onclick="return confirm('Ви впевнені що хочете видалити каталог {{ catalog.name }}?') ? true : false;" href="{{ path('app_delete_catalog', {'id': catalog.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -51,7 +64,7 @@
                     </div>
                 {% else %}
                     <div class="alert alert-primary" role="alert">
-                        Каталогів поки що немає. <a href="{{ path('app_new_catalog') }}">Додати каталог.</a>
+                        Каталогів поки що немає. {% if is_granted('ROLE_ADMIN')  %}<a href="{{ path('app_new_catalog') }}">Додати каталог.</a>{% endif %}
                     </div>
                 {% endif %}
 

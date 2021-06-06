@@ -14,6 +14,10 @@
     <script src="/src/js/CatalogHandler.js"></script>
     <script src="/src/js/scripts.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+
+
     {% block stylesheets %}{% endblock %}
 </head>
 <body>
@@ -25,11 +29,17 @@
         <ul class="nav navbar-nav navbar-right">
 
             {% if app.user %}
-                <li><a class="nav-link" href="{{ path('app_logout') }}">Вихід</a></li>
+
+                {% if is_granted('ROLE_ADMIN')  %}
+                    <li><a class="nav-link btn btn-light mx-1" href="{{ path('app_home') }}">Дашборд <i class="fas fa-columns"></i></a></li>
+                {% else %}
+                    <li><a class="nav-link btn btn-light mx-1" href="{{ path('app_user_profile') }}">Ваш профіль <i class="fas fa-user"></i></a></li>
+                {% endif %}
+                <li><a class="nav-link btn btn-light mx-1" href="{{ path('app_logout') }}">Вихід <i class="fas fa-sign-out-alt"></i></a></li>
             {% else %}
-                <li><a class="nav-link" href="{{ path('app_login') }}">Логін</a></li>
-                <li><a class="nav-link" href="{{ path('app_forgot_password_request') }}">Відновити пароль</a></li>
-                <li><a class="nav-link" href="{{ path('registration') }}">Реєстрація</a></li>
+                <li><a class="nav-link btn btn-light mx-1" href="{{ path('app_login') }}"><i class="fas fa-sign-in-alt"></i> Логін</a></li>
+                <li><a class="nav-link btn btn-light mx-1" href="{{ path('app_forgot_password_request') }}">Відновити пароль</a></li>
+                <li><a class="nav-link btn btn-light mx-1" href="{{ path('registration') }}">Реєстрація</a></li>
             {% endif %}
 
         </ul>
@@ -37,5 +47,8 @@
 </div>
 
 {% block body %}{% endblock %} {% block javascripts %}{% endblock %}
+
+<footer class="p-4"></footer>
+
 </body>
 </html>

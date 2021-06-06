@@ -38,6 +38,11 @@ class Order
      */
     private $ordered_items;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Chat::class, mappedBy="rel_order", cascade={"persist", "remove"})
+     */
+    private $chat;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -87,6 +92,28 @@ class Order
     public function setOrderedItems(string $ordered_items): self
     {
         $this->ordered_items = $ordered_items;
+
+        return $this;
+    }
+
+    public function getChat(): ?Chat
+    {
+        return $this->chat;
+    }
+
+    public function setChat(?Chat $chat): self
+    {
+        // unset the owning side of the relation if necessary
+        if ($chat === null && $this->chat !== null) {
+            $this->chat->setRelOrder(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($chat !== null && $chat->getRelOrder() !== $this) {
+            $chat->setRelOrder($this);
+        }
+
+        $this->chat = $chat;
 
         return $this;
     }

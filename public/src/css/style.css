@@ -39,3 +39,39 @@ form label + ul > li{
     border: 1px solid transparent;
     border-radius: .25rem;
 }
+
+.navbar.bg-light {
+    background-color: #eaf2fb!important;
+}
+
+
+/* chat_app */
+#chat_app .chat_app-chat{
+    padding: 0;
+    list-style: none;
+    overflow: auto;
+    max-height: 50vh;
+}
+
+#chat_app .message .text{
+    background: #eaf2fb;
+    padding: 5px 5px;
+    margin: 5px 0;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+#chat_app .message .text span{
+    max-width: 42vw;
+    display: inline-block;
+}
+
+#chat_app .message .date{
+    display: none;
+}
+
+#chat_app .your_message {
+    text-align: right;
+    width: 100%;
+    display: block;
+}

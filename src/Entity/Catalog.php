@@ -34,6 +34,11 @@ class Catalog
      */
     private $catalogItems;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $downloads;
+
     public function __construct()
     {
         $this->catalogItems = new ArrayCollection();
@@ -94,6 +99,18 @@ class Catalog
                 $catalogItem->setCatalog(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDownloads(): ?int
+    {
+        return $this->downloads;
+    }
+
+    public function setDownloads(?int $downloads): self
+    {
+        $this->downloads = $downloads;
 
         return $this;
     }

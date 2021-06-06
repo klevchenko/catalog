@@ -1,0 +1,106 @@
+<div id="chat_app" class="">
+
+    <ul class="chat_app-chat">
+        <li v-for="(message, key, index) in messages"
+            v-bind:class = "(logged_user_id == message.user)?'your_message':'admin_message'"
+            :key="message.id">
+
+            <span v-if="logged_user_id == message.user" class="message your_message">
+                <span class="text"><span>${message.text}</span></span>
+                <span class="date">${message.date}</span>
+            </span>
+
+            <span v-else class="message admin_message">
+                <span class="text"><span>${message.text}</span></span>
+                <span class="date">${message.date}</span>
+            </span>
+
+        </li>
+    </ul>
+
+    <div class="container">
+        <form class="form-inline row " @submit="sendMsgs">
+            <div class="form-group w-100">
+                <label for="message" class="sr-only">Password</label>
+                <textarea maxlength="200" required="required" v-model="message" rows="3" class="form-control w-100 mb-2" id="message"
+                          placeholder="Повідомлення"></textarea>
+                <button type="submit" class="btn btn-primary btn-block mb-2"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#chat_app',
+        delimiters: ['${', '}'],
+        data: {
+            logged_user_id: {{ app.user.id }},
+            message: '',
+            messages: [],
+            def_chat_id: {{ def_chat_id }},
+            ajax_get_chat_url: '{{ ajax_get_chat_url }}',
+            app_chat_new_msg: '{{ app_chat_new_msg }}',
+        },
+        mounted() {
+            this.getMsgs();
+        },
+        methods: {
+
+            getMsgs: function (e) {
+                axios.get(this.ajax_get_chat_url, {
+                    params: {
+                        token: '{{ csrf_token('chat') }}',
+                        def_chat_id: {{ def_chat_id }},
+                    }
+                }).then(response => {
+                    if (response.data.status === true && response.data.messages && response.data.messages.length) {
+                        this.messages = response.data.messages;
+                        this.scrollChat();
+                    }
+                }).catch(e => {
+                    console.log(e)
+                })
+            },
+            sendMsgs: function (e) {
+                e.preventDefault();
+
+                if (this.message.length < 1){
+
+                    return false;
+                }
+
+                let formData = new FormData();
+
+                formData.append('message', this.message);
+                formData.append('token', '{{ csrf_token('chat') }}');
+
+                axios.post(this.app_chat_new_msg,
+                    formData
+                ).then(response => {
+                    if (response.data.status === true) {
+                        this.message = '';
+                        this.getMsgs();
+                    }
+                }).catch(e => {
+                    console.log(e)
+                })
+
+            },
+
+            scrollChat: function () {
+                setTimeout(function (){
+                    var container = document.querySelector(".chat_app-chat");
+                    container.scrollTop = container.scrollHeight;
+                }, 100)
+
+                setTimeout(function (){
+                    var container = document.querySelector(".chat_app-chat");
+                    container.scrollTop = container.scrollHeight;
+                }, 500)
+            }
+
+        }
+    })
+</script>

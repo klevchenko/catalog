@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Chat;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Form\CreateNewOrder;
@@ -51,7 +52,14 @@ class OrderController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
 
-        $user = $this->security->getUser();
+        $userID = $request->query->get('user');
+
+        $user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['id' => $userID]);
+
+        if(!$user){
+            $user = $this->security->getUser();
+        }
+
         $order = new Order();
 
         $form = $this->createForm(CreateNewOrder::class, $order);
@@ -67,6 +75,18 @@ class OrderController extends AbstractController
             $em = $this->getDoctrine()->getManager();
             $em->persist($order);
             $em->flush();
+
+            if($this->getDoctrine()->getRepository(Order::class)->findBy(array('id' => $order->getId()))){
+
+                $chat = new Chat();
+                $chat->setUser($user);
+                $chat->setRelOrder($order);
+
+                // Save
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($chat);
+                $em->flush();
+            }
 
             return $this->redirectToRoute('app_orders');
         } else {
