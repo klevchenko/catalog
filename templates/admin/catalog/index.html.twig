@@ -15,6 +15,8 @@
                     {% if is_granted('ROLE_ADMIN')  %}
                       <div class="form-inline ">
                           <a href="{{ path('app_new_catalog') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
+                          &nbsp;
+                          <a href="{{ path('app_new_ajax_catalog') }}" type="button" class="form-control btn btn-primary">ajax</a>
                       </div>
                     {% endif %}
 
@@ -51,8 +53,7 @@
                                     <td>{{ catalog.date|date("m-d-Y g:ia") }}</td>
                                     <td class="text-right">
                                         <a href="{{ path('app_download_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-file-download"></i></a>
-                                        <a href="{{ path('app_view_catalog', {'id': catalog.id}) }}" class="btn btn-primary"><i class="fas fa-eye"></i></a>
-
+                                        
                                         {% if is_granted('ROLE_ADMIN')  %}
                                             <a onclick="return confirm('Ви впевнені що хочете видалити каталог {{ catalog.name }}?') ? true : false;" href="{{ path('app_delete_catalog', {'id': catalog.id}) }}" class="btn btn-danger"><i class="fas fa-trash"></i></a>
                                         {% endif %}
