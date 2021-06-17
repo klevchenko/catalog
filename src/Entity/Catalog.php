@@ -30,7 +30,7 @@ class Catalog
     private $date;
 
     /**
-     * @ORM\OneToMany(targetEntity=CatalogItem::class, mappedBy="catalog", cascade="remove")
+     * @ORM\OneToMany(targetEntity=CatalogItem::class, mappedBy="catalog", cascade={"remove"})
      */
     private $catalogItems;
 
@@ -41,7 +41,7 @@ class Catalog
 
     public function __construct()
     {
-        $this->catalogItems = new ArrayCollection();
+        $this->catalogItems = [];
     }
 
     public function getId(): ?int
