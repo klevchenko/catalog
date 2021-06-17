@@ -216,7 +216,13 @@ LINES TERMINATED BY '\n'
         $em->persist($catalog);
         $em->flush();
 
+        $projectDir = $this->getParameter('kernel.project_dir');
         $csvStr = '';
+
+        $full_export_file_path = $projectDir.'/public/uploads/'.'export_file_'.time().'.csv';
+
+        // create tmp file
+        file_put_contents($full_export_file_path, '');
 
         foreach ($catalog_items as $catalog_item){
 
@@ -224,13 +230,18 @@ LINES TERMINATED BY '\n'
             $price = floatval($catalog_item->getPrice());
             $price = $price * $extraCharge;
 
-            $csvStr .= '"'.$catalog_item->getNumber().'","'.$catalog_item->getCode().'","'.$price.'"' . "\n";
+            $csvStr = '"'.$catalog_item->getNumber().'","'.$catalog_item->getCode().'","'.$price.'"' . "\n";
 
+            file_put_contents($full_export_file_path, $csvStr, FILE_APPEND);
         }
 
-        $response = new Response($csvStr);
+        $response = new Response(file_get_contents($full_export_file_path));
         $response->headers->set('Content-Type', 'text/csv');
         $response->headers->set('Content-disposition','attachment; filename="'.$catalog->getName().'"');
+
+        if (file_exists($full_export_file_path)) {
+            unlink($full_export_file_path);
+        }
 
         return $response;
     }

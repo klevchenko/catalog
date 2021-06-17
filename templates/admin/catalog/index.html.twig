@@ -15,8 +15,6 @@
                     {% if is_granted('ROLE_ADMIN')  %}
                       <div class="form-inline ">
                           <a href="{{ path('app_new_catalog') }}" type="button" class="form-control btn btn-primary"><i class="fas fa-plus"></i></a>
-                          &nbsp;
-                          <a href="{{ path('app_new_ajax_catalog') }}" type="button" class="form-control btn btn-primary">ajax</a>
                       </div>
                     {% endif %}
 
